@@ -4,10 +4,11 @@ from plyfile import PlyData, PlyElement
 import numpy as np
 
 
-# 提供的instance 仅仅有很多是0
+# 提供的instance 有很多是0
 
 
-plydata = PlyData.read("/Users/junjiewang/Downloads/004507.ply")
+# plydata = PlyData.read("/Users/junjiewang/Downloads/001656.ply")
+plydata = PlyData.read("/Volumes/external/Downloads/000068_semantic_mesh.ply")
 vertex_data = plydata.elements[0].data
 face_data = plydata.elements[1].data # 每一行是一个tuple
 
@@ -15,7 +16,7 @@ xyz_points = np.column_stack((vertex_data['x'], vertex_data['y'], vertex_data['z
 instance_ids = vertex_data['ObjIdx']
 semantic_ids = vertex_data['ObjTag']
 
-faces = np.row_stack(face_data['vertex_indices']) # n_face, 3
+faces = np.vstack(face_data['vertex_indices']) # n_face, 3
 
 mesh = pv.PolyData()
 mesh.points = xyz_points
