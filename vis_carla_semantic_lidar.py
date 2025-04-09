@@ -86,10 +86,10 @@ sem_color_lut, inst_color_lut = creat_color_maps(semantic_color_map)
 file_path = "/Users/junjiewang/Downloads/out/semantic"
 ego_pose = "/Users/junjiewang/Downloads/out/ego_transformation.json"
 
-lidar_range = [0, -25.6, -2, 51.2, 25.6, 4.4] # 这里的0是车辆雷达传感器的位置的0
+# lidar_range = [0, -25.6, -2, 51.2, 25.6, 4.4] # 这里的0是车辆雷达传感器的位置的0
+lidar_range = [-150, -150, -15, 150, 150, 15]
 
-
-ego_to_world_trans = np.array(json.loads(open(ego_pose).read())['461832']) # ego车辆的位姿
+ego_to_world_trans = np.array(json.loads(open(ego_pose).read())['961']) # ego车辆的位姿
 lidar_to_ego_trans = np.array([[1, 0, 0, -0.5], 
                                [0, 1, 0, 0], 
                                [0, 0, 1, 1.85],
@@ -115,7 +115,7 @@ pcd = filter_points_by_range(pcd, lidar_range)
 pcd = mask_ego_points(pcd)
 
 point_cloud = pv.PolyData(pcd[:, :3])
-point_cloud['colors'] = colorize(sem_color_lut, inst_color_lut, pcd[:, 5].astype(np.uint32), pcd[:, 4].astype(np.uint32))[1]
+point_cloud['colors'] = colorize(sem_color_lut, inst_color_lut, pcd[:, 5].astype(np.uint32), pcd[:, 4].astype(np.uint32))[0]  #   0, semantic_label, 1 instance_label
 plotter = pv.Plotter()
 plotter.add_mesh(point_cloud, scalars='colors', rgb=True, point_size=1)
 plotter.show()

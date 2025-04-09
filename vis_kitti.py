@@ -66,11 +66,11 @@ voxel_label = _read_SemKITTI(voxel_label_path, dtype=np.uint16, do_unpack=False)
 
 
 # # vis poiwnt cloud
-# point_cloud = pv.PolyData(scan.points)
-# point_cloud['colors'] = scan.sem_label_color
-# plotter = pv.Plotter()
-# plotter.add_mesh(point_cloud, scalars='colors', rgb=True, point_size=1)
-# plotter.show()
+point_cloud = pv.PolyData(scan.points)
+point_cloud['colors'] = scan.sem_label_color
+plotter = pv.Plotter()
+plotter.add_mesh(point_cloud, scalars='colors', rgb=True, point_size=1)
+plotter.show()
 
 
 # vis voxel
