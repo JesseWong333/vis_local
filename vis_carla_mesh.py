@@ -54,6 +54,6 @@ def visualize_ply_with_axes(file_path):
 
 if __name__ == "__main__":
     # 使用示例
-    input_file = "/Users/junjiewang/Downloads/004507.ply"  # 修改为你的PLY文件路径
+    input_file = "/Users/junjiewang/Downloads/003916_mesh.ply"  # 修改为你的PLY文件路径
     visualize_ply_with_axes(input_file)
     

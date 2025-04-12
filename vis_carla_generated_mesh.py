@@ -3,9 +3,9 @@ import pyvista as pv
 from plyfile import PlyData, PlyElement
 import numpy as np
 
-# 提供的instance 有很多是0
+# 提供的instance 有很多是0. 使用ActorID
 
-plydata = PlyData.read("/Users/junjiewang/Downloads/000068_semantic_mesh.ply")
+plydata = PlyData.read("/Users/junjiewang/Downloads/000103_semantic_mesh.ply")
 vertex_data = plydata.elements[0].data
 face_data = plydata.elements[1].data # 每一行是一个tuple
 
