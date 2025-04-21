@@ -16,9 +16,16 @@ ranges = [-51.2, -25.6, -2, 51.2, 25.6, 4.4]
 # 空的位置就不处理采样, 只采样有物体的地方； 做目标检测（匈牙利匹配loss）也是这样的； 其余位置都是0，再随机采样
 # 空的位置也必须采样：否则都是1，怎么训练； 但是我存储的时候要都存储吗？
 
-# 问题，对开放场景的SDF怎么定义的？求交并
+# 问题，对开放场景的SDF怎么定义的？求交并, 需要全局统一格子
 
 # 总结： 均匀采样 + 表面; 均匀能做多少米，0.1m? 也有三千万, 生成的时候可以对不同的物体按照不同的分辨率来生成
+# 应该用背景加前景来做
+
+# 采样策略
+# 1） 不能均匀采样，至少训练的时候不能， 否则点太多
+# 应当对于每个物体的 bound 进行均匀采样 + 表面采样； 其余什么也没有的地方进行随机采样为 0 （训练的时候进行）
+
+# 会不会出现地面不平整，有重叠的地方(不管)
 
 # using mesh2sdf to get watertight mesh
 def mesh2sdf_DOGN(mesh, mesh_scale=0.8, size=64, level=None):
@@ -72,6 +79,7 @@ def water_tight_and_sampling(instance_mesh, semantic_id):
     # Static, 路边的椅子等
     
     return mesh2sdf_DOGN(mesh)
+
 def process_instance(args):
         instance_id, xyz_points, instance_ids, faces, semantic_ids = args
         mask = (instance_ids == instance_id)
