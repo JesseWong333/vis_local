@@ -3,9 +3,10 @@ import json
 import pyvista as pv
 from plyfile import PlyData, PlyElement
 import numpy as np
-import pymeshfix as mf
+import trimesh
 import open3d as o3d
 import pyvista
+import mesh2sdf
 
 # carla 产生的 Mesh 不一定是闭合的，我需要将将这些点; 闭合的Mesh叫watertight mesh
 # 
@@ -24,6 +25,7 @@ import pyvista
 
 
 # 非闭合的物体也可以体素化，所以一定要体素化吗？
+
 
 ranges = [-51.2, -25.6, -2, 51.2, 25.6, 4.4]
 
@@ -93,25 +95,59 @@ def voxelize_mesh_pyvista(points, faces, voxel_size=5):
     cube = pv.Cube(x_length=4.9, y_length=4.9, z_length=4.9)
     pc = pdata.glyph(scale=False, geom=cube, orient=False)
     pc.plot(show_axes=True)
+# 这个用了处理绿植明显很好
+def mesh2sdf_DOGN(vertices, faces):
     
+    mesh_scale = 0.8
+    size = 64 # 64格？
+    level = 2 / size
+    
+    # 必须要normalize吗
+    bbmin = vertices.min(axis=0)
+    bbmax = vertices.max(axis=0)
+    center = (bbmax + bbmin) / 2
+    scale = 2.0 * mesh_scale / (bbmax - bbmin).max()
+
+    vertices = (vertices - center) * scale
+    
+    sdf, mesh = mesh2sdf.compute(
+        vertices, faces, size, fix=True, level=level, return_mesh=True)
+    
+    mesh.vertices = mesh.vertices / scale + center
+    
+    # 可视化; 
+    vista_mesh = pv.PolyData()
+    vista_mesh.points = np.array(mesh.vertices)
+    vista_mesh.faces = np.column_stack(( np.full(mesh.faces.shape[0], 3), np.array(mesh.faces)))
+    vista_mesh.plot()
+    pass
+
 # 一个可能的做法：water_tight_mesh 里面填充； 非water_tight_mesh只进行表面体素化  
 def water_tight_mesh(instance_mesh, semantic_id):
+    mesh = trimesh.Trimesh(vertices = instance_mesh[0],
+                       faces = instance_mesh[1],)
+    if mesh.is_watertight:
+        return instance_mesh
+    
+    # 仅处理非watertight的
+    return mesh2sdf_DOGN(instance_mesh[0], instance_mesh[1])
+
     # 将不同的类别分类
-    if semantic_id in [0, 1, 2, 23, 25]: # Unlabeled, Roads, SideWalks, water, Ground
-        return instance_mesh
-    elif semantic_id in [3]: # Buildings
-        return instance_mesh
-    elif semantic_id in [4, 5, 28]: # walls, fences, GuardRail(护栏)
-        return instance_mesh
-    elif semantic_id in [14, 18]: # car
-        return voxelize_mesh(instance_mesh[0], instance_mesh[1])
-    elif semantic_id in [9]: # Terrain
-        # meshfix = mf.MeshFix(instance_mesh)  # 修复效果完全不行
-        # meshfix.repair(verbose=True)
-        # return meshfix.mesh
-        return voxelize_mesh(instance_mesh[0], instance_mesh[1])
-    elif semantic_id in [24]: # RoadLine, 过滤掉
-        return instance_mesh 
+    # if semantic_id in [0, 1, 2, 23, 25]: # Unlabeled, Roads, SideWalks, water, Ground
+    #     return instance_mesh
+    # elif semantic_id in [3]: # Buildings
+    #     return instance_mesh
+    # elif semantic_id in [4, 5, 28]: # walls, fences, GuardRail(护栏)
+    #     return instance_mesh
+    # elif semantic_id in [14, 18]: # car
+    #     return mesh2sdf_DOGN(instance_mesh[0], instance_mesh[1])
+    # elif semantic_id in [9]: # Terrain
+    #     # meshfix = mf.MeshFix(instance_mesh)  # 修复效果完全不行
+    #     # meshfix.repair(verbose=True)
+    #     # return meshfix.mesh
+    #     return mesh2sdf_DOGN(instance_mesh[0], instance_mesh[1])
+    # elif semantic_id in [24]: # RoadLine, 过滤掉
+    #     return instance_mesh 
     # Static, 路边的椅子等
     return instance_mesh
 
