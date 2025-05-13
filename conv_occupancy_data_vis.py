@@ -1,28 +1,31 @@
-
-# convolutional occupancy
-
-# 检查 ply文件的点云是否填充， 无，只包含表面
-import numpy as np
-from plyfile import PlyData, PlyElement
 import pyvista as pv
+from glob import glob
+import numpy as np
 
-plydata = PlyData.read("/Users/junjiewang/Downloads/pointcloud0.ply")
-vertex_data = plydata.elements[0].data
-face_data = plydata.elements[1].data # 每一行是一个tuple
+# iou 的内部是有点的, 墙壁有一点点厚度
 
-xyz_points = np.column_stack((vertex_data['x'], vertex_data['y'], vertex_data['z']))
+# 每个文件有 100000 100k 个点， 10个文件共存储了 100w 个点
 
-# 切开查看内部是否填充了
-x_mean = np.mean(xyz_points[:, 1])
-mask = xyz_points[:, 1] > x_mean
-xyz_points = xyz_points[mask]
+file_list = glob("/Volumes/external/Downloads/00000000/points_iou/*.npz")
 
-point_cloud = pv.PolyData(xyz_points)
+valid_points_l = []
+
+for file_path in file_list:
+    points_dict = np.load(file_path)
+    points = points_dict['points']
+    occupancies = points_dict['occupancies']
+    occupancies = np.unpackbits(occupancies)[:points.shape[0]]
+
+    mask = occupancies != 0
+    valid_points_l.append(points[mask])
+
+valid_points = np.concatenate(valid_points_l, axis=0).astype(np.float32)
+
+# center = valid_points.mean(axis=0)
+# valid_points = valid_points[(valid_points - center)[:,1] > 0]
+
+point_cloud = pv.PolyData(valid_points)
+point_cloud['color'] = valid_points[:, 2]
 plotter = pv.Plotter()
-plotter.add_mesh(point_cloud, 
-                 scalars=xyz_points[:, 2],
-                 cmap='viridis', 
-                 point_size=5)
+plotter.add_mesh(point_cloud, scalars='color', cmap='viridis')
 plotter.show()
-
-
