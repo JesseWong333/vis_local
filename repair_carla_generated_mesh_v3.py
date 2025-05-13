@@ -67,9 +67,8 @@ def water_tight_and_sampling(instance_mesh, semantic_id):
         return mesh2sdf_DOGN(mesh, size=128)
     # elif semantic_id in [4, 5, 28]: # walls, fences, GuardRail(护栏)
     #     return instance_mesh
-    # elif semantic_id in [14, 18]: # car
-    
-    #     return mesh2sdf_DOGN(instance_mesh[0], instance_mesh[1])
+    elif semantic_id in [14, 18]: # car
+        return mesh2sdf_DOGN(instance_mesh[0], instance_mesh[1])
     # elif semantic_id in [9]: # Terrain
     #     # meshfix = mf.MeshFix(instance_mesh)  # 修复效果完全不行
 
